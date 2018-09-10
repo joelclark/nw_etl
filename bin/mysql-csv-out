@@ -1,0 +1,49 @@
+#!/usr/bin/python3
+
+import os, sys, csv
+import mysql.connector
+
+stdin_st_size = os.fstat(sys.stdin.fileno()).st_size
+
+if stdin_st_size <= 0:
+  sys.exit('No input given')
+
+#sys.exit('test')
+
+sql = ''
+for line in sys.stdin:
+  sql += line + ' '
+
+from mysql.connector import errorcode
+
+config = {
+	'user': 'joel',
+	'password': 'joel',
+	'host': '192.168.0.201',
+	'database': 'northwind',
+	'raise_on_warnings': True,
+}
+
+csvwriter = csv.writer(sys.stdout)
+
+try:
+  cnx = mysql.connector.connect(**config)
+  cursor = cnx.cursor()
+  cursor.execute(sql)
+  while True:
+    rows = cursor.fetchmany(size=50)
+    if not rows:
+      break
+    for row in rows:
+      csvwriter.writerow(row)
+except mysql.connector.Error as err:
+  if err.errno == errorcode.ER_ACCESS_DENIED_ERROR:
+    print("Something is wrong with your user name or password")
+  elif err.errno == errorcode.ER_BAD_DB_ERROR:
+    print("Database does not exist")
+  else:
+    print(err)
+else:
+  cnx.close()
+
+

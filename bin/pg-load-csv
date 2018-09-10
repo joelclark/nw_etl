@@ -1,0 +1,5 @@
+#!/bin/bash
+PSQL="psql nw_stage"
+ENTITY=`echo $1 | cut -d\. -f1`
+$PSQL < ddl/$1.ddl.sql
+$PSQL -c "COPY unload.$ENTITY FROM stdin CSV" < $2
